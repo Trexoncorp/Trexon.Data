@@ -69,7 +69,40 @@ Eine bekannte vollständige Datenbankkopie einschließlich passender Historie mu
 wiederhergestellt werden. Die Markierung nicht einfach löschen.
 Eine Datenbanksperre serialisiert Schema-Updates, nicht normale Abfragen.
 
-ASP.NET Core: `services.AddTrexonData(config => ...)` registriert `Data` als
+## Beziehungen: 1:1, 1:N und N:M
+
+Die Navigationseigenschaften stammen aus dem
+[vollständigen ausführbaren Beispiel](https://github.com/Trexoncorp/Trexon.Data/blob/main/examples/Trexon.Data.Sample/Program.cs).
+Die Konfiguration verwendet die Standard-API von EF Core:
+
+```csharp
+config.Entity<User>(entity =>
+{
+    entity.HasOne(user => user.Profile)
+        .WithOne(profile => profile.User)
+        .HasForeignKey<UserProfile>(profile => profile.UserId);
+
+    entity.HasMany(user => user.Posts)
+        .WithOne(post => post.Author)
+        .HasForeignKey(post => post.AuthorId);
+
+    entity.HasMany(user => user.Roles)
+        .WithMany(role => role.Users)
+        .UsingEntity("UserRoles");
+});
+```
+
+Das Beispiel speichert zwei Benutzer mit Profilen, Beiträgen und gemeinsamen
+Rollen. Eine neue Sitzung lädt alle Beziehungen mit `Include`; auch die
+Gegenrichtung `Role.Users` wird gezeigt. EF verwaltet die Tabelle `UserRoles`.
+Beziehungen werden mit neuen Tabellen erstellt. Neue oder geänderte Fremdschlüssel
+in bestehenden Tabellen werden vom Updater abgelehnt. Eine neue N:M-Zwischentabelle
+ist möglich, solange bestehende Constraints unverändert bleiben.
+[Ausführliche Anleitung (Russisch)](https://github.com/Trexoncorp/Trexon.Data/blob/main/docs/RELATIONSHIPS.md).
+
+## ASP.NET Core
+
+`services.AddTrexonData(config => ...)` registriert `Data` als
 Singleton und `DataSession` pro Scope. `UpdateAsync()` wird explizit beim Start
 aufgerufen. Die Integration einmal registrieren.
 

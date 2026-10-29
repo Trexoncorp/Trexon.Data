@@ -108,6 +108,38 @@ Existing rows receive the supplied constant. The temporary fill default is
 removed unless the model also defines one. A C# property initializer is not a database default. For complex mappings, use the standard
 `EntityTypeBuilder<T>` callback in `Entity<T>()`.
 
+## Relationships: 1:1, 1:N and N:M
+
+Use standard EF mapping with the navigation properties shown in the
+[complete runnable sample](https://github.com/Trexoncorp/Trexon.Data/blob/main/examples/Trexon.Data.Sample/Program.cs):
+
+```csharp
+config.Entity<User>(entity =>
+{
+    entity.HasOne(user => user.Profile)
+        .WithOne(profile => profile.User)
+        .HasForeignKey<UserProfile>(profile => profile.UserId);
+
+    entity.HasMany(user => user.Posts)
+        .WithOne(post => post.Author)
+        .HasForeignKey(post => post.AuthorId);
+
+    entity.HasMany(user => user.Roles)
+        .WithMany(role => role.Users)
+        .UsingEntity("UserRoles");
+});
+```
+
+The sample saves two users with profiles, posts and shared roles, then loads all
+three relationships in a fresh session using `Include`. It also queries the
+reverse `Role.Users` navigation. EF manages the `UserRoles` join table.
+
+Relationships can be created with new tables. Adding or changing a foreign key on
+an existing managed table is currently rejected by `UpdateAsync()`. A new N:M join
+table is supported when existing table constraints remain unchanged.
+See the [relationship guide (Russian)](https://github.com/Trexoncorp/Trexon.Data/blob/main/docs/RELATIONSHIPS.md) for full models,
+queries, expected output and schema limitations.
+
 ## ASP.NET Core
 
 ```csharp

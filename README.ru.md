@@ -108,6 +108,39 @@ config.Change("002-add-score", change => change
 Для индексов, связей, длины строк и остальных настроек используется обычный
 `EntityTypeBuilder<T>` в `Entity<T>()`.
 
+## Связи 1:1, 1:М и М:М
+
+Связи настраиваются стандартным API EF. Ниже используются навигационные свойства
+моделей из [полного рабочего примера](https://github.com/Trexoncorp/Trexon.Data/blob/main/examples/Trexon.Data.Sample/Program.cs):
+
+```csharp
+config.Entity<User>(entity =>
+{
+    entity.HasOne(user => user.Profile)
+        .WithOne(profile => profile.User)
+        .HasForeignKey<UserProfile>(profile => profile.UserId);
+
+    entity.HasMany(user => user.Posts)
+        .WithOne(post => post.Author)
+        .HasForeignKey(post => post.AuthorId);
+
+    entity.HasMany(user => user.Roles)
+        .WithMany(role => role.Users)
+        .UsingEntity("UserRoles");
+});
+```
+
+Пример сохраняет двух пользователей с профилями, публикациями и общими ролями,
+затем загружает все три связи через `Include` в новой сессии. Также показана
+обратная навигация `Role.Users`. Таблицей связей `UserRoles` управляет EF.
+
+Связи создаются вместе с новыми таблицами. Добавление или изменение FK в уже
+существующей управляемой таблице `UpdateAsync()` пока отклоняет. Новую таблицу
+связи М:М можно добавить, если ограничения существующих таблиц не меняются.
+
+[Подробное руководство](https://github.com/Trexoncorp/Trexon.Data/blob/main/docs/RELATIONSHIPS.md): все модели, сохранение,
+загрузка, ожидаемый вывод и ограничения обновления схемы.
+
 ## ASP.NET Core
 
 ```csharp
