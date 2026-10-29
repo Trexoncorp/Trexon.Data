@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      ef-core-9:
+        patterns:
+          - Microsoft.EntityFrameworkCore*
+    ignore:
+      - dependency-name: Microsoft.EntityFrameworkCore*
+        update-types: [version-update:semver-major]
+      - dependency-name: Npgsql.EntityFrameworkCore.PostgreSQL
+        update-types: [version-update:semver-major]
+      - dependency-name: Pomelo.EntityFrameworkCore.MySql
+        update-types: [version-update:semver-major]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

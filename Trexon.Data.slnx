@@ -1,3 +1,9 @@
 <Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/Trexon.Data.Sample/Trexon.Data.Sample.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Trexon.Data.Tests/Trexon.Data.Tests.csproj" />
+  </Folder>
   <Project Path="Trexon.Data/Trexon.Data.csproj" />
 </Solution>
