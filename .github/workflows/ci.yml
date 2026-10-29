@@ -36,7 +36,12 @@ jobs:
       - run: dotnet restore Trexon.Data.slnx
       - run: dotnet build Trexon.Data.slnx --configuration Release --no-restore -p:ContinuousIntegrationBuild=true -warnaserror
       - run: dotnet test --solution Trexon.Data.slnx --configuration Release --no-build --no-restore
-      - run: dotnet run --project examples/Trexon.Data.Sample --configuration Release --no-build
+      - name: Validate documentation
+        if: runner.os == 'Linux'
+        run: python3 scripts/check-docs.py
+      - name: Run relationship sample
+        if: runner.os != 'Linux'
+        run: dotnet run --project examples/Trexon.Data.Sample --configuration Release --no-build
       - run: dotnet pack Trexon.Data/Trexon.Data.csproj --configuration Release --no-build --output artifacts -p:ContinuousIntegrationBuild=true -warnaserror
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:

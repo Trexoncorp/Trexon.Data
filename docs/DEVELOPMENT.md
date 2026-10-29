@@ -10,7 +10,7 @@
 dotnet restore Trexon.Data.slnx
 dotnet build Trexon.Data.slnx --configuration Release --no-restore -warnaserror
 dotnet test --solution Trexon.Data.slnx --configuration Release --no-build --no-restore
-dotnet run --project examples/Trexon.Data.Sample --configuration Release --no-build
+python3 scripts/check-docs.py
 dotnet pack Trexon.Data/Trexon.Data.csproj --configuration Release --no-build --output artifacts -warnaserror
 ```
 
@@ -31,8 +31,8 @@ dotnet test --solution Trexon.Data.slnx --configuration Release --no-build --no-
 
 CI поднимает PostgreSQL 17 и MySQL 8.4, запускает оба набора runtime-тестов и
 упаковывает NuGet. Кроссплатформенная сборка, SQLite и пример дополнительно
-проверяются на Linux, Windows и macOS. Публикация NuGet не настроена: локальная
-версия пакета — `1.0.0-dev`.
+проверяются на Linux, Windows и macOS. Публикация NuGet выполняется по тегу `v*` через OIDC / Trusted Publishing.
+Текущий стабильный релиз — `1.0.0`; см. [публикацию](PUBLISHING.md).
 
 ## Рабочий пример связей
 

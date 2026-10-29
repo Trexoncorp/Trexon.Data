@@ -6,7 +6,16 @@
 короткие сессии и обновление структуры БД из кода приложения. Собственный
 `DbContext`, свойства `DbSet` и команды `dotnet ef` не нужны.
 
-**Статус:** `1.0.0-dev`. Поддерживается ограниченный набор изменений схемы.
+**Версия:** `1.0.0`, первый стабильный релиз. Публичный API следует SemVer.
+Поддерживаемые изменения схемы и ограничения описаны ниже.
+
+## Установка
+
+```sh
+dotnet add package Trexon.Data --version 1.0.0
+```
+
+Пакет: [Trexon.Data в NuGet](https://www.nuget.org/packages/Trexon.Data/1.0.0).
 
 ## Начало работы
 
@@ -181,5 +190,7 @@ PostgreSQL/SQLite обновляются в транзакции. В MySQL DDL �
 
 Подробности: [схема](https://github.com/Trexoncorp/Trexon.Data/blob/main/docs/SCHEMA.md), [разработка и проверки](https://github.com/Trexoncorp/Trexon.Data/blob/main/docs/DEVELOPMENT.md).
 Рабочий пример: `examples/Trexon.Data.Sample`.
+
+Публикация релизов: [руководство](https://github.com/Trexoncorp/Trexon.Data/blob/main/docs/PUBLISHING.md).
 
 Лицензия [MIT](https://github.com/Trexoncorp/Trexon.Data/blob/main/LICENSE).

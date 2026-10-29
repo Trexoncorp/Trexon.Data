@@ -4,7 +4,15 @@
 
 Eine kleine EF-Core-Schicht für C# / .NET 8+: LINQ, PostgreSQL, MySQL und SQLite,
 kurzlebige Sitzungen und Schemaänderungen beim Programmstart. Ein eigener
-`DbContext` und `dotnet ef` sind nicht erforderlich. Status: `1.0.0-dev`.
+`DbContext` und `dotnet ef` sind nicht erforderlich. Version: `1.0.0`, die erste stabile Version.
+
+## Installation
+
+```sh
+dotnet add package Trexon.Data --version 1.0.0
+```
+
+[NuGet-Paket](https://www.nuget.org/packages/Trexon.Data/1.0.0).
 
 ```csharp
 using Microsoft.EntityFrameworkCore;

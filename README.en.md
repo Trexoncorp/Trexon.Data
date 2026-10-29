@@ -6,8 +6,16 @@ A small EF Core layer for C# / .NET 8+: LINQ, PostgreSQL, MySQL and SQLite,
 short-lived sessions, and schema updates from application code. No custom
 `DbContext`, `DbSet` properties or `dotnet ef` commands are required.
 
-**Status:** `1.0.0-dev`. The schema updater intentionally supports a limited set
-of changes. This is not a replacement for every EF migration scenario.
+**Version:** `1.0.0`, the first stable release. The public API follows semantic
+versioning. The schema updater intentionally supports the changes documented below.
+
+## Install
+
+```sh
+dotnet add package Trexon.Data --version 1.0.0
+```
+
+Package: [Trexon.Data on NuGet](https://www.nuget.org/packages/Trexon.Data/1.0.0).
 
 ## Start with one model
 
@@ -188,5 +196,7 @@ dotnet pack Trexon.Data/Trexon.Data.csproj --configuration Release --no-build --
 Tests run on .NET 8 and .NET 10. SQLite tests always run; PostgreSQL/MySQL tests
 require the explicit test connection environment variables described in
 [development](https://github.com/Trexoncorp/Trexon.Data/blob/main/docs/DEVELOPMENT.md). CI runs all three databases.
+
+For release publishing, see [the release guide](https://github.com/Trexoncorp/Trexon.Data/blob/main/docs/PUBLISHING.md).
 
 Licensed under [MIT](https://github.com/Trexoncorp/Trexon.Data/blob/main/LICENSE).

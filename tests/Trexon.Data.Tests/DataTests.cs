@@ -162,6 +162,79 @@ public sealed class DataTests
     }
 
     [Theory, MemberData(nameof(Providers))]
+    public async Task All_relationship_cardinalities_roundtrip_and_one_to_one_is_unique(string provider)
+    {
+        await using var store = await TestDatabase.CreateAsync(provider);
+        await using var data = store.Open(c => c.Entity<RelationshipUser>(e =>
+        {
+            e.HasOne(x => x.Profile).WithOne(x => x.User).HasForeignKey<RelationshipProfile>(x => x.UserId);
+            e.HasMany(x => x.Posts).WithOne(x => x.Author).HasForeignKey(x => x.AuthorId);
+            e.HasMany(x => x.Roles).WithMany(x => x.Users).UsingEntity("UserRoles");
+        }).Entity<RelationshipProfile>().Entity<RelationshipPost>().Entity<RelationshipRole>());
+        await data.UpdateAsync(Ct);
+        await using (var db = data.Open())
+        {
+            var reader = new RelationshipRole { Name = "Reader" };
+            db.Add(new RelationshipUser
+            {
+                Name = "Alice", Profile = new RelationshipProfile { Bio = "Alice profile" },
+                Posts = [new RelationshipPost { Title = "First" }, new RelationshipPost { Title = "Second" }], Roles = [reader]
+            });
+            db.Add(new RelationshipUser { Name = "Bob", Roles = [reader] });
+            await db.SaveAsync(Ct);
+        }
+        Assert.False((await data.UpdateAsync(Ct)).Changed);
+        int aliceId;
+        await using (var db = data.Open())
+        {
+            var alice = await db.Table<RelationshipUser>().AsNoTracking()
+                .Include(x => x.Profile).Include(x => x.Posts).Include(x => x.Roles)
+                .AsSplitQuery().SingleAsync(x => x.Name == "Alice", Ct);
+            aliceId = alice.Id;
+            Assert.Equal("Alice profile", alice.Profile!.Bio);
+            Assert.Equal(2, alice.Posts.Count);
+            Assert.Equal("Reader", Assert.Single(alice.Roles).Name);
+            var reader = await db.Table<RelationshipRole>().Include(x => x.Users).SingleAsync(Ct);
+            Assert.Equal(new[] { "Alice", "Bob" }, reader.Users.Select(x => x.Name).OrderBy(x => x));
+            Assert.Equal(1, await db.Table<RelationshipRole>().CountAsync(Ct));
+        }
+        await using (var db = data.Open())
+        {
+            db.Add(new RelationshipProfile { UserId = aliceId, Bio = "Duplicate" });
+            await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveAsync(Ct));
+        }
+    }
+
+    [Theory, MemberData(nameof(Providers))]
+    public async Task Many_to_many_join_can_be_added_to_existing_tables(string provider)
+    {
+        await using var store = await TestDatabase.CreateAsync(provider);
+        await using (var initial = store.Open(c => c.Entity<JoinUser>(e => e.Ignore(x => x.Roles))
+            .Entity<JoinRole>(e => e.Ignore(x => x.Users))))
+        {
+            await initial.UpdateAsync(Ct);
+            await using var db = initial.Open();
+            db.Add(new JoinUser { Name = "Existing user" }); db.Add(new JoinRole { Name = "Existing role" });
+            await db.SaveAsync(Ct);
+        }
+        await using var data = store.Open(c => c.Entity<JoinUser>(e => e.HasMany(x => x.Roles)
+            .WithMany(x => x.Users).UsingEntity("UserRoles")).Entity<JoinRole>());
+        Assert.True((await data.UpdateAsync(Ct)).Changed);
+        Assert.False((await data.UpdateAsync(Ct)).Changed);
+        await using (var db = data.Open())
+        {
+            var user = await db.Table<JoinUser>().SingleAsync(Ct);
+            user.Roles.Add(await db.Table<JoinRole>().SingleAsync(Ct));
+            await db.SaveAsync(Ct);
+        }
+        await using (var db = data.Open())
+        {
+            var role = await db.Table<JoinRole>().Include(x => x.Users).SingleAsync(Ct);
+            Assert.Equal("Existing user", Assert.Single(role.Users).Name);
+        }
+    }
+
+    [Theory, MemberData(nameof(Providers))]
     public async Task Concurrent_startup_has_one_creator_and_one_noop(string provider)
     {
         await using var store = await TestDatabase.CreateAsync(provider);
@@ -316,6 +389,19 @@ public sealed class DataTests
         Assert.Throws<ArgumentException>(() => Data.Create(c => c.UseSqlite(" ")));
     }
 
+    public sealed class RelationshipUser
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public RelationshipProfile? Profile { get; set; }
+        public List<RelationshipPost> Posts { get; set; } = [];
+        public List<RelationshipRole> Roles { get; set; } = [];
+    }
+    public sealed class RelationshipProfile { public int Id { get; set; } public string Bio { get; set; } = ""; public int UserId { get; set; } public RelationshipUser User { get; set; } = null!; }
+    public sealed class RelationshipPost { public int Id { get; set; } public string Title { get; set; } = ""; public int AuthorId { get; set; } public RelationshipUser Author { get; set; } = null!; }
+    public sealed class RelationshipRole { public int Id { get; set; } public string Name { get; set; } = ""; public List<RelationshipUser> Users { get; set; } = []; }
+    public sealed class JoinUser { public int Id { get; set; } public string Name { get; set; } = ""; public List<JoinRole> Roles { get; set; } = []; }
+    public sealed class JoinRole { public int Id { get; set; } public string Name { get; set; } = ""; public List<JoinUser> Users { get; set; } = []; }
     public sealed class Person { public int Id { get; set; } public string Name { get; set; } = ""; public string? Note { get; set; } public int Score { get; set; } }
     public sealed class Audit { public int Id { get; set; } public string Message { get; set; } = ""; }
     public sealed class Purchase { public int Id { get; set; } public string Number { get; set; } = ""; public int PersonId { get; set; } public Person Person { get; set; } = null!; }
