@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <Version>1.0.0-dev</Version>
+
+    <PackageId>Trexon.Data</PackageId>
+    <Title>Trexon.Data</Title>
+    <Authors>Trexoncorp</Authors>
+    <Description>A simple layer over Entity Framework Core for .NET.</Description>
+    <PackageTags>data;entity-framework-core;efcore</PackageTags>
+    <PackageProjectUrl>https://github.com/Trexoncorp/Trexon.Data</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Trexoncorp/Trexon.Data</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="/" />
+    <None Include="../LICENSE" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>
