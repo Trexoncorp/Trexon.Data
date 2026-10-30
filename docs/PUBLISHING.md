@@ -8,7 +8,7 @@
 
 - GitHub repository: `Trexoncorp/Trexon.Data`.
 - GitHub environment: `nuget`.
-- Repository variable `NUGET_USER`: имя профиля nuget.org, который владеет пакетом.
+- Необязательная repository variable `NUGET_USER`: имя профиля nuget.org; по умолчанию `anton_aleynichenko`.
 - NuGet Trusted Publishing: GitHub owner `Trexoncorp`, repository `Trexon.Data`,
   workflow `publish.yml`, environment `nuget`, область пакета строго `Trexon.Data`.
 - Для первого выпуска policy должна разрешать новые пакеты и новые версии.
@@ -47,3 +47,19 @@ NuGet key и публикует пакет и символы.
 обновление схемы. Поддержка связей и границы обновления описаны в
 [связях](RELATIONSHIPS.md) и [схеме](SCHEMA.md). Это часть описания релиза;
 стабильная версия не означает поддержку произвольных EF migrations.
+
+## Автоматическая публикация через Trusted Publishing
+
+Релизный workflow публикует проверенный nupkg и символы в NuGet через OIDC.
+Постоянный API key не нужен. Логин — repository variable `NUGET_USER` или
+`anton_aleynichenko` по умолчанию. Публикация использует environment `nuget`.
+
+В NuGet policy укажите owner репозитория `Trexoncorp`, имя этого репозитория,
+точное имя workflow и environment `nuget`; scope ограничьте соответствующим
+Package ID и публикацией новых версий существующего пакета.
+
+Для проверки настройки без загрузки пакета запустите workflow вручную на `main`:
+выполнится только обмен OIDC-токена. Публикация выполняется исключительно по тегу.
+Опубликованные теги не перемещайте; перед новым тегом обновите версию и документацию.
+
+Workflow: `publish.yml`. Тег: `vVERSION`; версия пакета берётся из тега.

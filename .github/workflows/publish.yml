@@ -3,6 +3,7 @@ name: Publish to NuGet
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -17,6 +18,7 @@ env:
 
 jobs:
   package:
+    if: github.event_name == 'push'
     name: Validate and pack release
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -90,14 +92,6 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: Check NuGet account configuration
-        env:
-          NUGET_USER: ${{ vars.NUGET_USER }}
-        run: |
-          if [[ -z "$NUGET_USER" ]]; then
-            echo '::error::Set the NUGET_USER repository variable and configure NuGet Trusted Publishing. See docs/PUBLISHING.md.'
-            exit 1
-          fi
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
           dotnet-version: '10.0.x'
@@ -109,7 +103,7 @@ jobs:
         id: login
         uses: NuGet/login@ebc737b6fc418a6ca0073cf116ec8dc156d8b81e # v1
         with:
-          user: ${{ vars.NUGET_USER }}
+          user: ${{ vars.NUGET_USER || 'anton_aleynichenko' }}
       - name: Publish package
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
@@ -118,3 +112,17 @@ jobs:
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
         run: dotnet nuget push "artifacts/*.snupkg" --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
+
+  verify-publishing:
+    name: Verify Trusted Publishing (no upload)
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: NuGet/login@ebc737b6fc418a6ca0073cf116ec8dc156d8b81e # v1
+        with:
+          user: ${{ vars.NUGET_USER || 'anton_aleynichenko' }}
